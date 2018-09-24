@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using LibraryServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -36,6 +37,7 @@ namespace LibraryManagement
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
+            services.AddScoped<ILibraryAsset, LibraryAssetService>();
             services.AddDbContext<ApplicationDbContext>(options 
                 => options.UseSqlServer(Configuration.GetConnectionString("LibraryConnection")));
         }

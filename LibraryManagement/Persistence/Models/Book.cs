@@ -14,6 +14,6 @@ namespace Persistence.Models
         public string Author { get; set; }
 
         [Required]
-        public string deweyIndex { get; set; }
+        public string DeweyIndex { get; set; }
     }
 }
