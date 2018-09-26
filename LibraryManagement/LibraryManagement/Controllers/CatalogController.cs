@@ -39,9 +39,25 @@ namespace LibraryManagement.Controllers
             return View(model);
         }
 
-        public ActionResult Details(int id)
+        public ActionResult Detail(int id)
         {
-            return View();
+            var asset = _assets.GetById(id);
+
+            var model = new AssetDetailViewModel
+            {
+                AssetId = id,
+                Title = asset.Title,
+                Year = asset.Year,
+                Cost = asset.Cost,
+                Status = asset.Status.Name,
+                ImageUrl = asset.ImageUrl,
+                AuthorOrDirector = _assets.GetAuthorOrDirector(id),
+                CurrentLocation = _assets.GetCurrentLocation(id).Name,
+                DeweyCallNumber = _assets.GetDeweyIndex(id),
+                ISBN = _assets.GetIsbn(id)
+            };
+
+            return View(model);
         }
 
         public ActionResult Create()
