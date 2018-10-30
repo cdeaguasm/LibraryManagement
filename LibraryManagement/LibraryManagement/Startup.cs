@@ -38,6 +38,7 @@ namespace LibraryManagement
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             services.AddScoped<ILibraryAsset, LibraryAssetService>();
+            services.AddScoped<ICheckout, CheckoutService>();
             services.AddDbContext<ApplicationDbContext>(options 
                 => options.UseSqlServer(Configuration.GetConnectionString("LibraryConnection")));
         }

@@ -12,10 +12,12 @@ namespace LibraryManagement.Controllers
     public class CatalogController : Controller
     {
         private readonly ILibraryAsset _assets;
+        private readonly ICheckout _checkout;
 
-        public CatalogController(ILibraryAsset assets)
+        public CatalogController(ILibraryAsset assets, ICheckout checkout)
         {
             _assets = assets;
+            _checkout = checkout;
         }
 
         public ActionResult Index()
@@ -43,6 +45,13 @@ namespace LibraryManagement.Controllers
         {
             var asset = _assets.GetById(id);
 
+            var currentHolds = _checkout.GetCurrentHolds(id)
+                .Select(a => new AssetHoldViewModel
+                {
+                    HoldPlaced = _checkout.GetCurrentHoldPlaced(a.Id).ToString("d"),
+                    PatronName = _checkout.GetCurrentHoldPatronName(a.Id)
+                });
+
             var model = new AssetDetailViewModel
             {
                 AssetId = id,
@@ -54,73 +63,79 @@ namespace LibraryManagement.Controllers
                 AuthorOrDirector = _assets.GetAuthorOrDirector(id),
                 CurrentLocation = _assets.GetCurrentLocation(id).Name,
                 DeweyCallNumber = _assets.GetDeweyIndex(id),
-                ISBN = _assets.GetIsbn(id)
+                ISBN = _assets.GetIsbn(id),
+                CheckoutHistory = _checkout.GetCheckoutHistory(id),
+                LatesCheckout = _checkout.GetLatestCheckout(id),
+                PatronName = _checkout.GetCurrenCheckoutPatron(id),
+                CurrentHold = currentHolds
             };
 
             return View(model);
         }
 
-        public ActionResult Create()
+        public IActionResult CheckIn(int id)
         {
-            return View();
+            _checkout.CheckInItem(id);
+            return RedirectToAction("Detail", new { id });
+        }
+
+        public IActionResult Checkout(int id)
+        {
+            var asset = _assets.GetById(id);
+
+            var model = new CheckoutViewModel
+            {
+                AssetId = id,
+                ImageUrl = asset.ImageUrl,
+                Title = asset.Title,
+                LibraryCardId = "",
+                IsCheckedOut = _checkout.IsCheckedOut(id)
+            };
+
+            return View(model);
+        }
+
+        public IActionResult Hold(int id)
+        {
+            var asset = _assets.GetById(id);
+
+            var model = new CheckoutViewModel
+            {
+                AssetId = id,
+                ImageUrl = asset.ImageUrl,
+                Title = asset.Title,
+                LibraryCardId = "",
+                IsCheckedOut = _checkout.IsCheckedOut(id),
+                HoldCount = _checkout.GetCurrentHolds(id).Count()
+            };
+
+            return View(model);
+        }
+
+        public IActionResult MarkLost(int assetId)
+        {
+            _checkout.MarkLost(assetId);
+            return RedirectToAction("Detail", new { id = assetId });
+        }
+
+        public IActionResult MarkFound(int id)
+        {
+            _checkout.MarkFound(id);
+            return RedirectToAction("Detail", new { id });
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public IActionResult PlaceCheckout(int assetId, int libraryCardId)
         {
-            try
-            {
-                // TODO: Add insert logic here
-
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        public ActionResult Edit(int id)
-        {
-            return View();
+            _checkout.CheckOutItem(assetId, libraryCardId);
+            return RedirectToAction("Detail", new { id = assetId });
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public IActionResult PlaceHold(int assetId, int libraryCardId)
         {
-            try
-            {
-                // TODO: Add update logic here
-
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                // TODO: Add delete logic here
-
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
+            _checkout.PlaceHold(assetId, libraryCardId);
+            return RedirectToAction("Detail", new { id = assetId });
         }
     }
 }
