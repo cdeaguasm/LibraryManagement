@@ -1,0 +1,18 @@
+﻿using Persistence.Models;
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Persistence
+{
+    public interface IPatron
+    {
+        Patron Get(int id);
+        IEnumerable<Patron> GetAll();
+        void Add(Patron model);
+
+        IEnumerable<CheckoutHistory> GetCheckoutHistory(int patronId);
+        IEnumerable<Hold> GetHolds(int patronId);
+        IEnumerable<Checkout> GetCheckouts(int patronId);
+    }
+}
